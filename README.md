@@ -1,19 +1,17 @@
 #Custom Rest Headers
 
-------
-
 This document contains grammar proposals for the rest header DSL specified in  [the Joinbox RESTFul Styleguide](https://github.com/joinbox/guidelines/blob/master/styleguide/RESTful.md). The parser itself is implemented as a PEG. For more information see the [Joinbox RESTFul Styleguide](https://github.com/joinbox/guidelines/blob/master/styleguide/RESTful.md) and [PEG.js](http://pegjs.majda.cz/)
 
 ##1. Select
 ###Example
-  ```HTTP
-  GET /user HTTP/1.1
-  Select: id, name, tenant.id, tenant.name, friend.name, friend.id
-  ```
-  ###Grammar
-  ```PEG
-  select ← name_dotted (',' name_dotted)*
-  ```
+```HTTP
+GET /user HTTP/1.1
+Select: id, name, tenant.id, tenant.name, friend.name, friend.id
+```
+###Grammar
+```PEG
+select ← name_dotted (',' name_dotted)*
+```
 
 ##2. Filter
 ###Example
