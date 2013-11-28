@@ -6,14 +6,14 @@ This document contains grammar proposals for the rest header DSL specified in  [
 
 ##1. Select
 ###Example
-  ```HTTP
-  GET /user HTTP/1.1
-  Select: id, name, tenant.id, tenant.name, friend.name, friend.id
-  ```
-  ###Grammar
-  ```PEG
-  select ← name_dotted (',' name_dotted)*
-  ```
+```HTTP
+GET /user HTTP/1.1
+Select: id, name, tenant.id, tenant.name, friend.name, friend.id
+```
+###Grammar
+```PEG
+select ← name_dotted (',' name_dotted)*
+```
 
 ##2. Filter
 ###Example
