@@ -49,7 +49,7 @@ string_sq_char = char:(('\\' sq) / (!sq .)) {return char.join(""); }
 string_dq = dq string_dq_char* dq
 string_dq_char = char:(('\\' dq) / (!dq .)) {return char.join(""); }
 
-function = id:name_base '(' ws params:(function_arguments?) ws ')' { return IR.func(id, params); }
+function = id:name_base '(' ws params:function_arguments? ws ')' { return IR.func(id, params); }
 function_arguments = values
 
 select = single:name_dotted more:(comma name_dotted)* { return IR.select(argumentsList(single, more)); }
@@ -60,7 +60,7 @@ filter_item = comp
 order = single:order_item more:(comma order_item)* { return IR.order(argumentsList(single, more)); }
 order_item = function / name_tagged / name_dotted
 
-date = year:date_year '-' month:date_month '-' day:date_day ws time:date_time? {
+date = year:date_year '-' month:date_pair '-' day:date_pair ws time:date_time? {
   var hour = 0,
       min = 0,
       sec = 0;
@@ -69,13 +69,11 @@ date = year:date_year '-' month:date_month '-' day:date_day ws time:date_time? {
     min = time[2],
     sec = time[4];
   }
-  return IR.date(new Date(year, month, day, hour, min, sec));
+  return IR.date(year, month, day, hour, min, sec);
 }
-date_two = one:[0-9]two:[0-9] {return parseInt(one+two, 10); }
+date_pair = result:([0-9][0-9]) {return parseInt(result.join(""), 10); }
 date_year = result:([1-9][0-9][0-9][0-9]) { return parseInt(result.join(""), 10); }
-date_month = date_two
-date_day = date_two
-date_time = date_two ':' date_two ':' date_two
+date_time = date_pair ':' date_pair ':' date_pair
 
 comp = name_dotted comp_op value
 comp_op = ws op:('!=' / '=' / '>=' / '<=' / '>' / '<') ws { return op; }

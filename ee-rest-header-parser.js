@@ -69,7 +69,7 @@ module.exports = (function(){
         "order": parse_order,
         "order_item": parse_order_item,
         "date": parse_date,
-        "date_two": parse_date_two,
+        "date_pair": parse_date_pair,
         "date_year": parse_date_year,
         "date_time": parse_date_time,
         "comp": parse_comp,
@@ -1368,7 +1368,7 @@ module.exports = (function(){
             }
           }
           if (result1 !== null) {
-            result2 = parse_date_two();
+            result2 = parse_date_pair();
             if (result2 !== null) {
               if (input.charCodeAt(pos) === 45) {
                 result3 = "-";
@@ -1380,7 +1380,7 @@ module.exports = (function(){
                 }
               }
               if (result3 !== null) {
-                result4 = parse_date_two();
+                result4 = parse_date_pair();
                 if (result4 !== null) {
                   result5 = parse_ws();
                   if (result5 !== null) {
@@ -1426,7 +1426,7 @@ module.exports = (function(){
             min = time[2],
             sec = time[4];
           }
-          return IR.date(new Date(year, month, day, hour, min, sec));
+          return IR.date(year, month, day, hour, min, sec);
         })(pos0, result0[0], result0[2], result0[4], result0[6]);
         }
         if (result0 === null) {
@@ -1435,7 +1435,7 @@ module.exports = (function(){
         return result0;
       }
       
-      function parse_date_two() {
+      function parse_date_pair() {
         var result0, result1;
         var pos0, pos1;
         
@@ -1471,7 +1471,7 @@ module.exports = (function(){
           pos = pos1;
         }
         if (result0 !== null) {
-          result0 = (function(offset, one, two) {return parseInt(one+two, 10); })(pos0, result0[0], result0[1]);
+          result0 = (function(offset, result) {return parseInt(result.join(""), 10); })(pos0, result0);
         }
         if (result0 === null) {
           pos = pos0;
@@ -1556,7 +1556,7 @@ module.exports = (function(){
         var pos0;
         
         pos0 = pos;
-        result0 = parse_date_two();
+        result0 = parse_date_pair();
         if (result0 !== null) {
           if (input.charCodeAt(pos) === 58) {
             result1 = ":";
@@ -1568,7 +1568,7 @@ module.exports = (function(){
             }
           }
           if (result1 !== null) {
-            result2 = parse_date_two();
+            result2 = parse_date_pair();
             if (result2 !== null) {
               if (input.charCodeAt(pos) === 58) {
                 result3 = ":";
@@ -1580,7 +1580,7 @@ module.exports = (function(){
                 }
               }
               if (result3 !== null) {
-                result4 = parse_date_two();
+                result4 = parse_date_pair();
                 if (result4 !== null) {
                   result0 = [result0, result1, result2, result3, result4];
                 } else {
