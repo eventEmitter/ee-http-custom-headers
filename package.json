@@ -31,6 +31,6 @@
     "dsl"
   ],
   "scripts": {
-    "test": "node test.js"
+    "test": "./node_modules/.bin/mocha --reporter spec"
   }
 }
