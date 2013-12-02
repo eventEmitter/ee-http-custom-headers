@@ -1,4 +1,4 @@
-var parser = require('./ee-rest-header-parser.js'),
+var parser = require('./lib/parser/HeaderParser.js'),
     log = require('ee-log');
 
 
