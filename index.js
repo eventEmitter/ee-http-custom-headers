@@ -1,14 +1,52 @@
-var parser = require('./lib/parser/HeaderParser.js'),
-    log = require('ee-log');
+var parser      = require('./lib/parser/HeaderParser.js'),
+    log         = require('ee-log'),
+    Class       = require('ee-class'),
+    NodeCollection = require('./lib/nodes/NodeCollection');
 
+var PrettyPrinter = new Class({
+    buffer: ''
+    , visitActionNode: function(node){
+        var buffer = node.accept(this)+' ( ';
+        node.getParameter().forEach(function(item){
+            buffer+= ' , ';
+            buffer+= item.accept(this);
+        });
+        buffer += ' ) ';
+        return buffer;
+    }
+    , visitNamedNode: function(node){
+        return node.getName();
+    }
+    , visitPropertyNode: function(node){
+        return node.getNames().join(' . ');
+    }
+    , visitVariableNode: function(node){
+        return node.getName();
+    }
+    , visitComparisonNode: function(node){
+        return node.getValue().accept(this)+" "+node.getOperator()+" "+node.getProperty().accept(this);
+    }
+    , visitValueNode: function(node){
+        return node.toString();
+    }
+    , visitNodeCollection: function(node){
+        var result = []
+        node.forEach(function(item){
+            result.append(item.accept(this));
+        })
+        return result;
+    }
 
-log(parser.parse("halo.dings.bums", "select").pop().getHierarchy());
-/*
-log(parser.parse("halo.dings.bums", "name_dotted"));
-log(parser.parse("[1, 3, 4]", "array"));
-log(parser.parse("action(1, 3, false)", "function"));
-log(parser.parse("id, thing.dings"), "select");
-log(parser.parse("id=10, created!=null", "filter"));
-log(parser.parse("id, created DESC", "order"));*/
+    , prettyPrint: function(node){
+        return node.accept(this).join(' AND ');
+    }
+});
 
-/*log(parser.parse("dings.id>2013-20-12", "comp"));*/
+var printer = new PrettyPrinter();
+for(var name in printer){
+    if(typeof printer[name] == 'function'){
+        console.log(name);
+    }
+}
+var result = parser.parse('user.id!=[100, 200], created>bigger(2000-10-01)', 'filter');
+log(printer.prettyPrint(result));

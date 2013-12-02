@@ -68,7 +68,7 @@ describe('The parser for ', function(){
         it('should be able to parse arrays of an arbitrary length', function(){
             var node = parser.parse('[1, 2, 3, [true, false], avg([1,3,4])]', 'array');
             assert.equal(5, node.length);
-            assert.deepEqual([true, false], node[3]);
+            assert(node[3][0]);
             assert.equal(3, node[2]);
             assert(node[4].accept({visitActionNode: function(an){
                 return true;
@@ -148,7 +148,9 @@ describe('The parser for ', function(){
 
     describe('date', function(){
         it('should handle dates without time', function(){
-            var node = parser.parse('2013-12-24', 'date');
+            var value_node = parser.parse('2013-12-24', 'date');
+            node = value_node.getValue();
+
             assert(node instanceof Date);
             assert.equal(2013, node.getFullYear());
             assert.equal(11, node.getMonth());
@@ -159,7 +161,9 @@ describe('The parser for ', function(){
             assert.equal(0, node.getMilliseconds());
         });
         it('should handle dates with time', function(){
-            var node = parser.parse('2000-01-04 10:15:03', 'date');
+            var value_node = parser.parse('2000-01-04 10:15:03', 'date');
+            node = value_node.getValue();
+
             assert(node instanceof Date);
             assert.equal(2000, node.getFullYear());
             assert.equal(0, node.getMonth());
@@ -203,6 +207,7 @@ describe('The parser for ', function(){
             assert(!node.testsLessOrEqual());
         });
     });
+
     describe('filter', function(){
         it('should handle single constraints', function(){
             var node = parser.parse('user.fb != null', 'filter');
