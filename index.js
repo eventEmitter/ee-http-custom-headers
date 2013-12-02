@@ -4,9 +4,10 @@
  * @todo Allow to hook in additional rules for node transformation
  */
 
-var parser      = require('./lib/parser/HeaderParser.js'),
+var parser      = require('./lib/parser/HeaderParser'),
     log         = require('ee-log'),
-    Class       = require('ee-class');
+    Class       = require('ee-class'),
+    PrettyPrint = require('./example/PrettyPrinter');
 
 /**
  * The parser itself.

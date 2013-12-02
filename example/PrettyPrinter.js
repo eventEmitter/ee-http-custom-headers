@@ -1,12 +1,6 @@
 var log         = require('ee-log'),
     Class       = require('ee-class');
-var showMethods = function(obj){
-    for(var name in obj){
-        if(typeof obj[name] == 'function'){
-            console.log(name);
-        }
-    }
-};
+
 var PrettyPrinter = module.exports = new Class({
     _type: 'Pretty Printerio'
     , visitActionNode: function(node){
@@ -24,10 +18,14 @@ var PrettyPrinter = module.exports = new Class({
         return node.getName();
     }
     , visitPropertyNode: function(node){
-        return node.getNames().join('.');
+        var names = node.getNames().join('.');
+        if(!node.hasTags()){
+            return names;
+        }
+        return names+' '+node.getTags().join(' ');
     }
     , visitVariableNode: function(node){
-        return node.getName();
+        return this.visitPropertyNode(node);
     }
 
     , visitComparisonNode: function(node){
@@ -45,6 +43,17 @@ var PrettyPrinter = module.exports = new Class({
         return result;
     }
 
+    , visitOrderStatement: function(node){
+        return '\nORDER-BY:\n\t'+this.visitNodeCollection(node).join('\n\t')
+    }
+
+    , visitFilterStatement: function(node){
+        return '\nFILTER: \n\t'+this.visitNodeCollection(node).join('\n\tAND\t');
+    }
+
+    , visitSelectStatement: function(node){
+        return '\nSELECT:\n\t'+this.visitNodeCollection(node).join(',\n\t');
+    }
     , prettyPrint: function(node){
         return node.accept(this);
     }
