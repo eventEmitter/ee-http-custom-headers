@@ -25,6 +25,18 @@ describe('The parser for ', function(){
             assert(!node.hasParent());
         });
 
+        it('should allow wildcards', function(){
+            var node = parser.parse('user.profile.*', 'name_dotted');
+            assert.equal('*', node.getName());
+            assert(node.hasParent());
+        });
+
+        it('allows single wildcards', function(){
+            var node = parser.parse('*', 'name_dotted');
+            assert.equal('*', node.getName());
+            assert(!node.hasParent());
+        });
+
         var node = parser.parse('user.profile.id', 'name_dotted');
         it('should handle compound names (properties)', function(){
             assert.equal('id', node.getName());

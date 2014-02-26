@@ -3,6 +3,7 @@ var log         = require('ee-log'),
 
 var PrettyPrinter = module.exports = new Class({
     _type: 'Pretty Printerio'
+
     , visitActionNode: function(node){
         var params = node.getParameters(),
             parameterBuffer = [];

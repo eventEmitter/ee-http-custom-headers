@@ -6,8 +6,7 @@
 
 var parser      = require('./lib/parser/HeaderParser'),
     log         = require('ee-log'),
-    Class       = require('ee-class'),
-    PrettyPrint = require('./example/PrettyPrinter');
+    Class       = require('ee-class');
 
 /**
  * The parser itself.
