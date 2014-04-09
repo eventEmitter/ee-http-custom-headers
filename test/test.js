@@ -4,7 +4,24 @@ var parser  = require('./../lib/parser/HeaderParser'),
     assert  = require('assert');
 
 describe('The parser for ', function(){
-    describe('names', function(){
+
+    describe('value', function(){
+        it('should also parse functions', function(){
+            var node = parser.parse('range(100, 10)', 'value');
+        });
+    });
+
+    describe('names', function() {
+        it('name should fail on function names (lookahead)', function(){
+            try {
+                parser.parse('funzioniii()', 'name');
+                assert(false);
+            } catch (err){
+                assert(true);
+            }
+        });
+
+
         var node = parser.parse('testName', 'name');
         it('should create a variable node ', function(){
             assert.equal('testName', node.getName());
@@ -62,12 +79,14 @@ describe('The parser for ', function(){
     });
 
     describe('tagged names (ordering)', function(){
+
         it('should handle single names with tag', function(){
             var node = parser.parse("date ASC", 'name_tagged');
             assert.equal(1, node.getTags().length);
             assert.equal('date', node.getName());
             assert.equal('ASC', node.getTags()[0]);
         });
+
         it('should handle compound names with tag', function(){
             var node = parser.parse("date.month DESC", 'name_tagged');
             assert.equal(1, node.getTags().length);
@@ -77,6 +96,7 @@ describe('The parser for ', function(){
     });
 
     describe('arrays', function(){
+
         it('should be able to parse arrays of an arbitrary length', function(){
             var node = parser.parse('[1, 2, 3, [true, false], avg([1,3,4])]', 'array');
             assert.equal(5, node.length);
@@ -86,13 +106,15 @@ describe('The parser for ', function(){
                 return true;
             }}));
         });
+
         it('should be able to parse empty arrays', function(){
             var node = parser.parse('[ ]', 'array');
             assert.equal(0, node.length);
         });
     });
 
-    describe('actions (functions)', function(){
+    describe('actions (functions)', function() {
+
         it('should parse actions without parameters', function(){
             var node = parser.parse('maxint()', 'function');
             assert.equal('maxint', node.getName());
@@ -158,7 +180,8 @@ describe('The parser for ', function(){
         });
     });
 
-    describe('date', function(){
+    describe('date', function() {
+
         it('should handle dates without time', function(){
             var value_node = parser.parse('2013-12-24', 'date');
             node = value_node.getValue();
@@ -172,6 +195,7 @@ describe('The parser for ', function(){
             assert.equal(0, node.getSeconds());
             assert.equal(0, node.getMilliseconds());
         });
+
         it('should handle dates with time', function(){
             var value_node = parser.parse('2000-01-04 10:15:03', 'date');
             node = value_node.getValue();
@@ -188,31 +212,37 @@ describe('The parser for ', function(){
     });
 
     describe('comparison', function(){
+
         it('should handle equality', function(){
             var node = parser.parse('user.birthday = 1985-03-13', 'comp');
             assert(node.testsEquality());
             assert(!node.testsInequality());
         });
+
         it('should handle inequality', function(){
             var node = parser.parse('user.birthday != null', 'comp');
             assert(node.testsInequality());
             assert(!node.testsMoreThan());
         });
+
         it('should handle more than', function(){
             var node = parser.parse('user.birthday > NOW()', 'comp');
             assert(node.testsMoreThan());
             assert(!node.testsLessThan());
         });
+
         it('should handle less than', function(){
             var node = parser.parse('user.birthday < NOW()', 'comp');
             assert(!node.testsMoreThan());
             assert(node.testsLessThan());
         });
+
         it('should handle less or equal than', function(){
             var node = parser.parse('user.birthday <= 2000-02-23', 'comp');
             assert(!node.testsMoreThan());
             assert(node.testsLessOrEqual());
         });
+
         it('should handle more or equal than', function(){
             var node = parser.parse('user.birthday >= 2000-02-23', 'comp');
             assert(node.testsMoreOrEqual());
@@ -221,13 +251,21 @@ describe('The parser for ', function(){
     });
 
     describe('filter', function(){
+
         it('should handle single constraints', function(){
             var node = parser.parse('user.fb != null', 'filter');
             assert.equal(1, node.length);
         });
+
         it('should handle multiple constraints', function(){
             var node = parser.parse('user.fb != null, credits >= 100', 'filter');
             assert.equal(2, node.length);
         });
+
+        it('should parse mixed filters', function(){
+            var node = parser.parse('id > 10, dings = range(100, 10)', 'filter');
+            assert.equal(2, node.length);
+        });
+
     });
 });
