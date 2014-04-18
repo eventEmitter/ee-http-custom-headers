@@ -3,7 +3,7 @@ var parser  = require('./../lib/parser/HeaderParser'),
     mocha   = require('mocha'),
     assert  = require('assert');
 
-describe('The parser for ', function(){
+describe('HeaderParser', function(){
 
     describe('value', function(){
         it('should also parse functions', function(){

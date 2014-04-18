@@ -4,9 +4,15 @@
  * @todo Allow to hook in additional rules for node transformation
  */
 
-var parser      = require('./lib/parser/HeaderParser'),
-    log         = require('ee-log'),
-    Class       = require('ee-class');
+var parser              = require('./lib/parser/HeaderParser'),
+    ParserMiddleware    = require('./lib/ParserMiddleware');
+
+/**
+ * The middleware for the services.
+ *
+ * @type {*}
+ */
+module.exports.Middleware = ParserMiddleware;
 
 /**
  * The parser itself.

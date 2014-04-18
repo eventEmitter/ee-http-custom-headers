@@ -1,6 +1,6 @@
 {
   "name": "ee-rest-headers",
-  "description": "Tools to parse and handle custom rest headers",
+  "description": "Middleware to parse and process custom rest headers",
   "version": "0.1.0",
   "homepage": "https://github.com/eventEmitter/ee-rest-headers",
   "author": "Michael Rüfenacht <ruefe@rcky.ch> (http://rcky.ch/)",
@@ -10,7 +10,7 @@
     "type": "git"
   },
   "engines": {
-    "node": ">=v0.10.17"
+    "node": ">=v0.10.25"
   },
   "bugs": {
     "url": "https://github.com/eventEmitter/ee-rest-headers/issues"
@@ -20,7 +20,8 @@
     "ee-types": "*",
     "ee-log": "*",
     "pegjs": "~0.7.0",
-    "mocha": "~1.14.0"
+    "mocha": "~1.14.0",
+    "ee-lru-cache": "~0.1.1"
   },
   "devDependencies": {},
   "optionalDependencies": {},
