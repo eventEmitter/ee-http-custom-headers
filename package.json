@@ -19,9 +19,9 @@
     "ee-class": "*",
     "ee-types": "*",
     "ee-log": "*",
-    "pegjs": "~0.7.0",
+    "pegjs": "0.8.0",
     "mocha": "~1.14.0",
-    "ee-lru-cache": "~0.1.1"
+    "ee-lru-cache": "*"
   },
   "devDependencies": {},
   "optionalDependencies": {},

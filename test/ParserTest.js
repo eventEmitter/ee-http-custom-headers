@@ -1,7 +1,9 @@
-var parser  = require('./../lib/parser/HeaderParser'),
+var PEG     = require('pegjs');
     log     = require('ee-log'),
     mocha   = require('mocha'),
     assert  = require('assert');
+
+var parser = require('../lib/parser/HeaderParser');
 
 describe('HeaderParser', function(){
 
