@@ -16,12 +16,12 @@
     "url": "https://github.com/eventEmitter/ee-rest-headers/issues"
   },
   "dependencies": {
-    "ee-class": "*",
+    "ee-class": "0.3.*",
     "ee-types": "*",
-    "ee-log": "*",
+    "ee-log": "0.2.*",
     "pegjs": "0.8.0",
     "mocha": "~1.14.0",
-    "ee-lru-cache": "*"
+    "ee-lru-cache": "0.1.*"
   },
   "devDependencies": {},
   "optionalDependencies": {},
