@@ -16,7 +16,7 @@
     "url": "https://github.com/eventEmitter/ee-rest-headers/issues"
   },
   "dependencies": {
-    "ee-class": "0.3.*",
+    "ee-class": "0.4.*",
     "ee-types": "*",
     "ee-log": "0.2.*",
     "pegjs": "0.8.0",
