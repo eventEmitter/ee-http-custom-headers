@@ -269,5 +269,10 @@ describe('HeaderParser', function(){
             assert.equal(2, node.length);
         });
 
+        it('should parse mixed filters 2', function(){
+            var node = parser.parse('location.address.postalcode > 4500, location.address.postalcode < 4500, deleted = null', 'filter');
+            assert.equal(3, node.length);
+        });
+
     });
 });
