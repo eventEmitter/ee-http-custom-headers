@@ -156,6 +156,13 @@ describe('HeaderParser', function(){
             assert.equal('lastName', node[2].getName());
             assert.equal('profile.id', node[3].flattenName());
         });
+
+        it('should ignore leading and trailing commas', function(){
+            var node = parser.parse(', id, firstName, lastName, profile.id ,', 'select');
+            assert.equal('id', node[0].getName());
+            assert.equal('lastName', node[2].getName());
+            assert.equal('profile.id', node[3].flattenName());
+        });
     });
 
     describe('ordering', function(){
@@ -180,6 +187,13 @@ describe('HeaderParser', function(){
             assert.equal('RAND', node[1].getName());
             assert(node[1].hasParameters());
         });
+
+        it('should ignore leading and trailing commas', function(){
+            var node = parser.parse(', priority ,', 'order');
+            assert.equal(1, node.length);
+            assert.equal('priority', node[0].getName());
+        });
+
     });
 
     describe('date', function() {
@@ -271,6 +285,11 @@ describe('HeaderParser', function(){
 
         it('should parse mixed filters 2', function(){
             var node = parser.parse('location.address.postalcode > 4500, location.address.postalcode < 4500, deleted = null', 'filter');
+            assert.equal(3, node.length);
+        });
+
+        it('should ignore leading and trailing commas', function(){
+            var node = parser.parse(', location.address.postalcode > 4500, location.address.postalcode < 4500, deleted = null ,', 'filter');
             assert.equal(3, node.length);
         });
 
