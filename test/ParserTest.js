@@ -293,5 +293,31 @@ describe('HeaderParser', function(){
             assert.equal(3, node.length);
         });
 
+        it('should handle single constraints', function(){
+            var node = parser.parse('user.fb != null', 'filter');
+            assert.equal(1, node.length);
+        });
+
+        it('should handle multiple constraints', function(){
+            var node = parser.parse('user.fb != null, credits >= 100', 'filter');
+            assert.equal(2, node.length);
+        });
+
+        it('should parse the like operator in filters', function(){
+            var node = parser.parse('name LIKE "some%one"', 'filter');
+            assert.equal(1, node.length);
+            assert.equal(node[0].operator, 'LIKE');
+            assert.equal(node[0].property.name, 'name');
+            assert.equal(node[0].value.value, 'some%one');
+        });
+
+        it('the like operator should be case insensitive and return the operator in upper case', function(){
+            var node = parser.parse('name liKe "some%one", id = 100', 'filter');
+            assert.equal(2, node.length);
+            assert.equal(node[0].operator, 'LIKE');
+            assert.equal(node[0].property.name, 'name');
+            assert.equal(node[0].value.value, 'some%one');
+        });
+
     });
 });
