@@ -8,6 +8,13 @@ var parser              = require('./lib/parser/HeaderParser'),
     ParserMiddleware    = require('./lib/ParserMiddleware');
 
 /**
+ * The error classes for proper error handling.
+ *
+ * @type {exports}
+ */
+module.exports.error    = require('./lib/error');
+
+/**
  * The middleware for the services.
  *
  * @type {*}
