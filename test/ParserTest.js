@@ -13,6 +13,28 @@ describe('HeaderParser', function(){
         });
     });
 
+    describe('string', function(){
+        it('should parse strings in single quotes', function(){
+            var node = parser.parse("'single quoted'", 'value');
+            assert.equal(node.value, "single quoted");
+        });
+
+        it('should parse strings in double quotes', function(){
+            var node = parser.parse('"double quoted"', 'value');
+            assert.equal(node.value, "double quoted");
+        });
+
+        it('should parse escaped strings', function(){
+            var node = parser.parse('"double \\"quoted"', 'value');
+            assert.equal(node.value, 'double \\"quoted');
+        });
+
+        it('should parse special characters', function(){
+            var node = parser.parse('"wäääu"', 'value');
+            assert.equal(node.value, 'wäääu');
+        });
+    });
+
     describe('names', function() {
         it('name should fail on function names (lookahead)', function(){
             try {
