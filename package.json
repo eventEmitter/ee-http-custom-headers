@@ -1,7 +1,7 @@
 {
       "name"                        : "ee-rest-headers"
     , "description"                 : "Middleware to parse and process custom rest headers"
-    , "version"                     : "0.1.0"
+    , "version"                     : "0.1.1"
     , "homepage"                    : "https://github.com/eventEmitter/ee-rest-headers"
     , "author"                      : "Michael Rüfenacht <ruefe@rcky.ch> (http://rcky.ch/)"
     , "licence"                     : "mit"
