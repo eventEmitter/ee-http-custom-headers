@@ -341,5 +341,10 @@ describe('HeaderParser', function(){
             assert.equal(node[0].value.value, 'some%one');
         });
 
+        it('should allow whitespace around operators', function(){
+            var node = parser.parse('eventData.hidden =true', 'filter');
+            assert(node[0][0].value.value === true);
+        });
+
     });
 });
