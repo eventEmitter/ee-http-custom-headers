@@ -345,5 +345,10 @@ describe('HeaderParser', function(){
             var node = parser.parse('(user.deleted != null)', 'filter');
         });
 
+        it('should allow whitespace around operators', function(){
+            var node = parser.parse('eventData.hidden =true', 'filter');
+            assert(node[0][0].value.value === true);
+        });
+
     });
 });
