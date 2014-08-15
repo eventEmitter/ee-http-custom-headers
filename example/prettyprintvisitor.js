@@ -4,7 +4,7 @@ var PrettyPrint = require('./PrettyPrinter'),
 
 var printer     = new PrettyPrint(),
     parseOrder  = header.parseOrder('user.id, user.created DESC'),
-    parseFilter = header.parseFilter('user.created < 2013-01-01, user.name!=startswith("j"), user.state=max(["vip", "prom"])'),
+    parseFilter = header.parseFilter('(user.created < 2013-01-01 | user.name!=startswith("j")) , user.state=max(["vip", "prom"])'),
     parseSelect = header.parseSelect('id, firstName, lastName, profile.id');
 
 log(printer.prettyPrint(parseOrder));

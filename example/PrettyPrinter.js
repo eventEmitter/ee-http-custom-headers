@@ -2,35 +2,15 @@ var log         = require('ee-log'),
     Class       = require('ee-class');
 
 var PrettyPrinter = module.exports = new Class({
-    _type: 'Pretty Printerio'
+
+      _type: 'Pretty Printerio'
 
     , visitActionNode: function(node){
-        var params = node.getParameters(),
-            parameterBuffer = [];
-
-        for(var i=0; i<params.length; i++){
-            parameterBuffer.push(params.at(i).accept(this));
-        }
-
-        return node.getName()+'('+parameterBuffer.join(' , ')+')';
+        return node.getName()+' ( '+this.visitCollection(node.parameters)+' ) ';
     }
 
     , visitNamedNode: function(node){
         return node.getName();
-    }
-    , visitPropertyNode: function(node){
-        var names = node.getNames().join('.');
-        if(!node.hasTags()){
-            return names;
-        }
-        return names+' '+node.getTags().join(' ');
-    }
-    , visitVariableNode: function(node){
-        return this.visitPropertyNode(node);
-    }
-
-    , visitComparisonNode: function(node){
-        return node.getValue().accept(this)+"\t"+node.getOperator()+"\t"+node.getProperty().accept(this);
     }
 
     , visitValueNode: function(node){
@@ -44,17 +24,46 @@ var PrettyPrinter = module.exports = new Class({
         return result;
     }
 
+    , visitOrdering: function(node){
+        return node.value.accept(this)+"\t"+node.direction;
+    }
+
+    , visitSequence: function(node){
+        return this.visitNodeCollection(node).join('\n\t&&\t');
+    }
+
+    , visitCollection: function(node){
+        return this.visitNodeCollection(node).join(' , ');
+    }
+
+    , visitArrayCollection: function(node){
+        return ' [ '+this.visitCollection(node)+' ] ';
+    }
+
+    , visitComparison: function(node){
+        return node.identifier.accept(this)+' '+node.comparator+' '+node.value.accept(this);
+    }
+
+    , visitChoice: function(node){
+        return ' ( '+this.visitNodeCollection(node).join('\n\t|\t')+' ) ';
+    }
+
+    , visitIdentifier: function(node){
+        return node.toString();
+    }
+
     , visitOrderStatement: function(node){
         return '\nORDER-BY:\n\t'+this.visitNodeCollection(node).join('\n\t')
     }
 
     , visitFilterStatement: function(node){
-        return '\nFILTER: \n\t'+this.visitNodeCollection(node).join('\n\tAND\t');
+        return '\nFILTER: \n\t'+this.visitNodeCollection(node).join('\n\t|\t');
     }
 
     , visitSelectStatement: function(node){
         return '\nSELECT:\n\t'+this.visitNodeCollection(node).join(',\n\t');
     }
+
     , prettyPrint: function(node){
         return node.accept(this);
     }
