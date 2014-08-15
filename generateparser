@@ -1,2 +1,2 @@
 #!/bin/sh
-./node_modules/.bin/pegjs --allowed-start-rules filter,select,order,value,name,name_dotted,name_tagged,date,function,array,comp lib/parser/_HeaderParser.pegjs lib/parser/_HeaderParser.js
+./node_modules/.bin/pegjs --allowed-start-rules filter,select,order,value,identifier,function,array,comp,pipe,comma,name,order_item,date,values lib/parser/_HeaderParser.pegjs lib/parser/_HeaderParser.js

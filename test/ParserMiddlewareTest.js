@@ -98,13 +98,13 @@ describe('ParserMiddleware', function(){
             });
 
             it('should parse filter headers', function(){
-                assert.equal(3, mockRequest.getHeader('filter', true).length);
+                assert.equal(1, mockRequest.getHeader('filter', true).length);
                 // counter is 3 because the headers are preprocessed now
                 assert.equal(3, mockParser.counter);
             });
 
             it('should cache the parsed filter header', function(){
-                assert(mockRequest.getHeader('filter', true).length == 3);
+                assert.equal(1, mockRequest.getHeader('filter', true).length);
                 assert(cache.has(mockRequest._headers['filter']));
                 // counter is 3 because the headers are preprocessed now
                 assert.equal(mockParser.counter, 3);

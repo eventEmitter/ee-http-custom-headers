@@ -4,12 +4,19 @@ var PEG     = require('pegjs');
     assert  = require('assert');
 
 var parser = require('../lib/parser/HeaderParser');
-
 describe('HeaderParser', function(){
 
     describe('value', function(){
         it('should also parse functions', function(){
             var node = parser.parse('range(100, 10)', 'value');
+        });
+    });
+
+    describe('values', function(){
+        it('should create a collection and strip delimiters', function(){
+            var node = parser.parse('100, 10', 'values');
+            assert.equal(2, node.length);
+            assert.equal(10, node[1].value);
         });
     });
 
@@ -36,86 +43,57 @@ describe('HeaderParser', function(){
     });
 
     describe('names', function() {
-        it('name should fail on function names (lookahead)', function(){
-            try {
-                parser.parse('funzioniii()', 'name');
-                assert(false);
-            } catch (err){
-                assert(true);
-            }
-        });
 
+        var node;
 
-        var node = parser.parse('testName', 'name');
-        it('should create a variable node ', function(){
+        it('should create an identifier node', function(){
+            node = parser.parse('testName', 'identifier');
             assert.equal('testName', node.getName());
         });
-        it('which has no parent', function(){
-            assert.equal(null, node.getParent());
+
+        it('which has no accesses', function(){
+           assert.equal(false, node.hasAccesses());
         });
-        it('and no tags', function(){
-           assert.equal(0, node.getTags().length);
+
+        it('should allow wildcards', function(){
+            var node = parser.parse('*', 'identifier');
+            assert.equal('*', node.getName());
         });
     });
 
     describe('dotted names (properties)', function(){
 
-        it('should handle simple names', function(){
-            var node = parser.parse('testName', 'name_dotted');
-            assert.equal('testName', node.getName());
-            assert(!node.hasParent());
-        });
+        var node;
 
         it('should allow wildcards', function(){
-            var node = parser.parse('user.profile.*', 'name_dotted');
-            assert.equal('*', node.getName());
-            assert(node.hasParent());
+            node = parser.parse('user.profile.*', 'identifier');
+            assert.equal('user', node.getName());
+            assert.equal(true, node.hasAccesses());
         });
 
-        it('allows single wildcards', function(){
-            var node = parser.parse('*', 'name_dotted');
-            assert.equal('*', node.getName());
-            assert(!node.hasParent());
+
+        it('should handle compound names', function(){
+            node = parser.parse('user.profile.id', 'identifier');
+            assert.equal('user', node.getName());
+            assert.equal(true, node.hasAccesses());
+            assert.equal(2, node.getAccesses().length);
         });
 
-        var node = parser.parse('user.profile.id', 'name_dotted');
-        it('should handle compound names (properties)', function(){
-            assert.equal('id', node.getName());
-            assert(node.hasParent());
-        });
-
-        it('should create a hierarych', function(){
-            var hierarchy = node.getHierarchy();
-            assert.equal(3, hierarchy.length);
-
-            assert.equal('user', hierarchy[0].getName());
-            assert.equal('profile', hierarchy[1].getName());
-            assert.equal('id', hierarchy[2].getName());
-
-            assert.deepEqual(node.getParent(), hierarchy[1]);
-        });
-
-        it('should trace their parents', function(){
-            assert.equal('profile', node.getParent().getName());
-            assert(node.getParent().hasParent());
-            assert.equal('user', node.getParent().getParent().getName());
-        });
     });
 
     describe('tagged names (ordering)', function(){
 
         it('should handle single names with tag', function(){
-            var node = parser.parse("date ASC", 'name_tagged');
-            assert.equal(1, node.getTags().length);
-            assert.equal('date', node.getName());
-            assert.equal('ASC', node.getTags()[0]);
+            var node = parser.parse("date ASC", 'order_item');
+            assert.equal('date', node.value.getName());
+            assert.equal('ASC', node.direction);
         });
 
         it('should handle compound names with tag', function(){
-            var node = parser.parse("date.month DESC", 'name_tagged');
-            assert.equal(1, node.getTags().length);
-            assert.equal('month', node.getName());
-            assert.equal('DESC', node.getTags()[0]);
+            var node = parser.parse("date.month DESC", 'order_item');
+            assert.equal('date', node.value.getName());
+            assert(node.value.hasAccesses());
+            assert.equal('DESC', node.direction);
         });
     });
 
@@ -174,16 +152,17 @@ describe('HeaderParser', function(){
 
         it('should handle arbitrary fields', function(){
             var node = parser.parse('id, firstName, lastName, profile.id', 'select');
+
             assert.equal('id', node[0].getName());
             assert.equal('lastName', node[2].getName());
-            assert.equal('profile.id', node[3].flattenName());
+            assert.equal('profile.id', node[3].toString());
         });
 
         it('should ignore leading and trailing commas', function(){
             var node = parser.parse(', id, firstName, lastName, profile.id ,', 'select');
             assert.equal('id', node[0].getName());
             assert.equal('lastName', node[2].getName());
-            assert.equal('profile.id', node[3].flattenName());
+            assert.equal('profile.id', node[3].toString());
         });
     });
 
@@ -191,29 +170,29 @@ describe('HeaderParser', function(){
         it('should handle a single tagged order', function(){
             var node = parser.parse('created DESC', 'order');
             assert.equal(1, node.length);
-            assert.equal('DESC', node[0].getTags()[0]);
+            assert.equal('DESC', node[0].direction);
         });
 
         it('should handle mixed orderings', function(){
             var node = parser.parse('user.id, created RAND', 'order');
+
             assert.equal(2, node.length);
-            assert.equal('user.id', node[0].flattenName());
-            assert(!node[0].hasTags());
-            assert.equal('RAND', node[1].getTags()[0]);
+            assert.equal('user.id', node[0].value.toString());
+            assert.equal('RAND', node[1].direction);
         });
 
         it('should handle orderings by action', function(){
             var node = parser.parse('user.id, RAND(created)', 'order');
             assert.equal(2, node.length);
-            assert.equal('user.id', node[0].flattenName());
-            assert.equal('RAND', node[1].getName());
-            assert(node[1].hasParameters());
+            assert.equal('user.id', node[0].value.toString());
+            assert.equal('RAND', node[1].value.getName());
+            assert(node[1].value.hasParameters());
         });
 
         it('should ignore leading and trailing commas', function(){
             var node = parser.parse(', priority ,', 'order');
             assert.equal(1, node.length);
-            assert.equal('priority', node[0].getName());
+            assert.equal('priority', node[0].value.getName());
         });
 
     });
@@ -221,8 +200,8 @@ describe('HeaderParser', function(){
     describe('date', function() {
 
         it('should handle dates without time', function(){
-            var value_node = parser.parse('2013-12-24', 'date');
-            node = value_node.getValue();
+            var node = parser.parse('2013-12-24', 'date');
+            node = node.getValue();
 
             assert(node instanceof Date);
             assert.equal(2013, node.getFullYear());
@@ -235,8 +214,8 @@ describe('HeaderParser', function(){
         });
 
         it('should handle dates with time', function(){
-            var value_node = parser.parse('2000-01-04 10:15:03', 'date');
-            node = value_node.getValue();
+            var node = parser.parse('2000-01-04 10:15:03', 'date');
+            node = node.getValue();
 
             assert(node instanceof Date);
             assert.equal(2000, node.getFullYear());
@@ -253,38 +232,37 @@ describe('HeaderParser', function(){
 
         it('should handle equality', function(){
             var node = parser.parse('user.birthday = 1985-03-13', 'comp');
-            assert(node.testsEquality());
-            assert(!node.testsInequality());
+            assert(node.comparatorIs('='));
         });
 
         it('should handle inequality', function(){
             var node = parser.parse('user.birthday != null', 'comp');
-            assert(node.testsInequality());
-            assert(!node.testsMoreThan());
+            assert(node.comparatorIs('!='));
         });
 
         it('should handle more than', function(){
             var node = parser.parse('user.birthday > NOW()', 'comp');
-            assert(node.testsMoreThan());
-            assert(!node.testsLessThan());
+            assert(node.comparatorIs('>'));
         });
 
         it('should handle less than', function(){
             var node = parser.parse('user.birthday < NOW()', 'comp');
-            assert(!node.testsMoreThan());
-            assert(node.testsLessThan());
+            assert(node.comparatorIs('<'));
         });
 
         it('should handle less or equal than', function(){
             var node = parser.parse('user.birthday <= 2000-02-23', 'comp');
-            assert(!node.testsMoreThan());
-            assert(node.testsLessOrEqual());
+            assert(node.comparatorIs('<='));
         });
 
         it('should handle more or equal than', function(){
             var node = parser.parse('user.birthday >= 2000-02-23', 'comp');
-            assert(node.testsMoreOrEqual());
-            assert(!node.testsLessOrEqual());
+            assert(node.comparatorIs('>='));
+        });
+
+        it('should handle like', function(){
+            var node = parser.parse('user.birthday LIKE "%2000-02-23"', 'comp');
+            assert(node.comparatorIs('like'));
         });
     });
 
@@ -297,22 +275,22 @@ describe('HeaderParser', function(){
 
         it('should handle multiple constraints', function(){
             var node = parser.parse('user.fb != null, credits >= 100', 'filter');
-            assert.equal(2, node.length);
+            assert.equal(2, node[0].length);
         });
 
         it('should parse mixed filters', function(){
             var node = parser.parse('id > 10, dings = range(100, 10)', 'filter');
-            assert.equal(2, node.length);
+            assert.equal(2, node[0].length);
         });
 
         it('should parse mixed filters 2', function(){
             var node = parser.parse('location.address.postalcode > 4500, location.address.postalcode < 4500, deleted = null', 'filter');
-            assert.equal(3, node.length);
+            assert.equal(3, node[0].length);
         });
 
         it('should ignore leading and trailing commas', function(){
             var node = parser.parse(', location.address.postalcode > 4500, location.address.postalcode < 4500, deleted = null ,', 'filter');
-            assert.equal(3, node.length);
+            assert.equal(3, node[0].length);
         });
 
         it('should handle single constraints', function(){
@@ -322,23 +300,49 @@ describe('HeaderParser', function(){
 
         it('should handle multiple constraints', function(){
             var node = parser.parse('user.fb != null, credits >= 100', 'filter');
-            assert.equal(2, node.length);
+            assert.equal(2, node[0].length);
         });
 
         it('should parse the like operator in filters', function(){
             var node = parser.parse('name LIKE "some%one"', 'filter');
             assert.equal(1, node.length);
-            assert.equal(node[0].operator, 'LIKE');
-            assert.equal(node[0].property.name, 'name');
-            assert.equal(node[0].value.value, 'some%one');
+            assert.equal(node[0][0].comparator, 'LIKE');
+            assert.equal(node[0][0].identifier.name, 'name');
+            assert.equal(node[0][0].value.value, 'some%one');
         });
 
         it('the like operator should be case insensitive and return the operator in upper case', function(){
             var node = parser.parse('name liKe "some%one", id = 100', 'filter');
+            assert.equal(1, node.length);
+            assert.equal(node[0][0].comparator, 'LIKE');
+            assert.equal(node[0][0].identifier.name, 'name');
+            assert.equal(node[0][0].value.value, 'some%one');
+        });
+
+        it('should be able to parse the or operator', function(){
+            var node = parser.parse('user.birtdate > 1986-31-12 | user.birthdate < 1985-01-01', 'filter');
             assert.equal(2, node.length);
-            assert.equal(node[0].operator, 'LIKE');
-            assert.equal(node[0].property.name, 'name');
-            assert.equal(node[0].value.value, 'some%one');
+            assert.equal(node[0][0].comparator, '>');
+            assert.equal(node[0][0].identifier.name, 'user');
+        });
+
+        it('and should have higher precedence than or', function(){
+            var node = parser.parse('user.birtdate > 1986-31-12 | user.birthdate < 1985-01-01, user.deleted != null', 'filter');
+            assert.equal(2, node.length);
+            assert.equal(2, node[1].length);
+        });
+
+        it('except the or is grouped', function(){
+            var node = parser.parse('(user.birtdate > 1986-31-12 | user.birthdate < 1985-01-01) , user.deleted != null', 'filter');
+            assert.equal(1, node.length)
+            // the and relation
+            assert.equal(2, node[0].length);
+            // the inner or
+            assert.equal(2, node[0][0].length);
+        });
+
+        it('should handle parentheses around the whole statement', function(){
+            var node = parser.parse('(user.deleted != null)', 'filter');
         });
 
     });
