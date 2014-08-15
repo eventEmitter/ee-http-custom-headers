@@ -59,6 +59,9 @@ GET /user HTTP/1.1
 Order: name, friends.name DESC
 ```
 
+##Nodes
+The parser generates AST nodes. These nodes can be traversed using the visitor pattern (with a double dispatch).
+
 ###Misc
 #### Dates
 The parser supports dates and datetimes (possible ambiguity with number!!)

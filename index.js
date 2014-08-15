@@ -4,8 +4,9 @@
  * @todo Allow to hook in additional rules for node transformation
  */
 
-var parser              = require('./lib/parser/HeaderParser'),
-    ParserMiddleware    = require('./lib/ParserMiddleware');
+var   parser              = require('./lib/parser/HeaderParser')
+    , ParserMiddleware    = require('./lib/ParserMiddleware')
+    , Visitor             = require('./lib/visitor/NodeVisitor');
 
 /**
  * The error classes for proper error handling.
@@ -26,6 +27,14 @@ module.exports.Middleware = ParserMiddleware;
  * @type {*|exports}
  */
 module.exports.parser = parser;
+
+
+/**
+ * A depth first visitor.
+ *
+ * @type {*|exports}
+ */
+module.exports.Visitor = Visitor;
 
 /**
  * Parses a select statement into a collection of properties and variables.

@@ -25,4 +25,8 @@ describe('ee-rest-headers', function(){
     it('should expose a shortcut parseFilter', function(){
         assert('parseFilter' in module);
     });
+
+    it('should expose the visitor', function(){
+        assert('Visitor' in module);
+    });
 });
