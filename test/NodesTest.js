@@ -132,13 +132,27 @@ describe('ASTNodes', function(){
 
     describe('Ordering', function(){
 
+        it('should have a default direction of ASC', function(){
+            var   identifier    = new nodes.Identifier('property')
+                , node          = new nodes.Ordering(identifier);
+
+            assert.equal('ASC', node.direction);
+        });
+
+        it('should have a default direction of ASC if an empty string is passed to the constructor', function(){
+            var   identifier    = new nodes.Identifier('property')
+                , node          = new nodes.Ordering(identifier, '');
+
+            assert.equal('ASC', node.direction);
+        });
+
         it('should be cloneable', function(){
 
             var   identifier    = new nodes.Identifier('my', ['biggest', 'hits', 'rating'])
                 , node          = new nodes.Ordering(identifier)
                 , clone         = node.clone();
 
-            assert.equal('ASC', node.direction);
+
 
             assert.notStrictEqual(node, clone);
             assert.deepEqual(node, clone);
