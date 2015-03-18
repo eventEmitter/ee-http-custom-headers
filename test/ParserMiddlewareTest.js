@@ -209,6 +209,16 @@ describe('ParserMiddleware', function(){
 
                 });
             });
+
+            it('should correctly clone the header values if possible', function(done){
+
+                var result = repeatingRequest.getHeader('order', true);
+
+                assert(result);
+                assert.notStrictEqual(result, firstResult);
+
+                done();
+            });
         });
     });
 
