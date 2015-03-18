@@ -1,9 +1,11 @@
-var PEG     = require('pegjs');
+var assert  = require('assert')
+
+    PEG     = require('pegjs'),
     log     = require('ee-log'),
-    mocha   = require('mocha'),
-    assert  = require('assert');
+    Types   = require('ee-types');
 
 var parser = require('../lib/parser/HeaderParser');
+
 describe('HeaderParser', function(){
 
     describe('value', function(){
@@ -52,7 +54,7 @@ describe('HeaderParser', function(){
         });
 
         it('which has no accesses', function(){
-           assert.equal(false, node.hasAccesses());
+            assert.equal(false, node.hasAccesses());
         });
 
         it('should allow wildcards', function(){
@@ -123,11 +125,17 @@ describe('HeaderParser', function(){
             assert(!node.hasParameters());
         });
 
+        it('should parse actions without parameters 2', function(){
+            var node = parser.parse('notNull()', 'function');
+            assert.equal('notNull', node.getName());
+            assert(!node.hasParameters());
+        });
+
         it('should parse actions with parameters', function(){
             var node = parser.parse('map([1, 2, 3], "average")', 'function');
             assert.equal("map", node.getName());
-            assert(node.hasParameters())
-            assert.equal(2, node.getParameters().length)
+            assert(node.hasParameters());
+            assert.equal(2, node.getParameters().length);
         });
 
         it('should properly parse nested actions', function(){
@@ -136,7 +144,7 @@ describe('HeaderParser', function(){
             assert(node.hasParameters());
             assert.equal(3, node.getParameters().length);
 
-            nested = node.getParameters()[2];
+            var nested = node.getParameters()[2];
             assert.equal('is_enabled', nested.getName());
             assert(!nested.hasParameters());
         })
@@ -334,7 +342,7 @@ describe('HeaderParser', function(){
 
         it('except the or is grouped', function(){
             var node = parser.parse('(user.birtdate > 1986-31-12 | user.birthdate < 1985-01-01) , user.deleted != null', 'filter');
-            assert.equal(1, node.length)
+            assert.equal(1, node.length);
             // the and relation
             assert.equal(2, node[0].length);
             // the inner or
@@ -348,6 +356,25 @@ describe('HeaderParser', function(){
         it('should allow whitespace around operators', function(){
             var node = parser.parse('eventData.hidden =true', 'filter');
             assert(node[0][0].value.value === true);
+        });
+
+        it('should handle functions without parameters', function(){
+
+            var   node = parser.parse('event.startdate=notNull()', 'filter')
+                , result;
+
+            // or level
+            assert.equal(1, node.length);
+            // and level
+            assert.equal(1, node[0].length);
+
+            result = node[0][0];
+
+            assert.equal('=', result.comparator);
+            assert.equal('notNull', result.value.name);
+            assert(!result.value.hasParameters());
+
+            assert.equal(result.value.getParameters()._type, 'Collection');
         });
 
     });

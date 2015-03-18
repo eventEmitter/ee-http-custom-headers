@@ -18,7 +18,7 @@
     , "dependencies": {
           "ee-class"                : "1.0.*"
         , "ee-types"                : "0.1.*"
-        , "ee-log"                  : "0.2.*"
+        , "ee-log"                  : "0.3.*"
         , "pegjs"                   : "0.8.*"
         , "ee-lru-cache"            : "0.1.*"
     }
@@ -28,6 +28,6 @@
     , "optionalDependencies": {}
     , "keywords"                    : ["node" , "rest" , "headers" , "dsl"]
     , "scripts": {
-        "test"                      : "./node_modules/.bin/mocha --reporter spec"
+        "test"                      : "mocha --reporter spec --check-leaks"
     }
 }
