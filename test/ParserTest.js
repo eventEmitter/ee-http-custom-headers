@@ -168,6 +168,7 @@ describe('HeaderParser', function(){
 
         it('should ignore leading and trailing commas', function(){
             var node = parser.parse(', id, firstName, lastName, profile.id ,', 'select');
+            log(node);
             assert.equal('id', node[0].getName());
             assert.equal('lastName', node[2].getName());
             assert.equal('profile.id', node[3].toString());
