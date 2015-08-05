@@ -11,7 +11,7 @@ var ParserAssertion = module.exports = new Class({
 
     , parseTo: function(parser, input, rule, expected, strict){
         var result = this.parse(parser, input, rule);
-        this._compare(expected, result, strict);
+        this._compare(expected, result.toString(), strict);
         return result;
     }
 
