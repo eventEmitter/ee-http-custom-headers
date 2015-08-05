@@ -1,16 +1,24 @@
-var PEG     = require('pegjs');
-    log     = require('ee-log'),
-    mocha   = require('mocha'),
-    assert  = require('assert');
+var   log     = require('ee-log')
+    , assert  = require('assert');
 
-var parser = require('../lib/parser/HeaderParser');
+
+var   parser    = require('../lib/parser/HeaderParser')
+    , pAssert   = require('./ParserAssertion').forParser(parser);
+
+function compareNodeName(asserter, input, name){
+    var node = asserter.parse(input);
+    assert.equal(name, node.getName());
+    return node;
+}
 
 describe('HeaderParser', function(){
 
     describe('value', function(){
 
+        var value = pAssert.forRule('value');
+
         it('should also parse functions', function(done){
-            var node = parser.parse('range(100, 10)', 'value');
+            var node = value.parse('range(100, 10)');
             assert.equal(2, node.getParameters().length);
             node.accept({
                 visitActionNode : function(node) {
@@ -21,84 +29,149 @@ describe('HeaderParser', function(){
         });
 
         it('should properly convert booleans', function(){
-            var node = parser.parse('true', 'value');
-            assert.strictEqual(true, node.value);
-
-            node = parser.parse('false', 'value');
-            assert.strictEqual(false, node.value);
+            value.transformAndParseTo('true', function(result){ return result.value; }, true, true);
+            value.transformAndParseTo('false', function(result){ return result.value; }, false, true);
         });
 
     });
 
     describe('string', function(){
+
+        var str = pAssert.forRule('value');
+
         it('should parse strings in single quotes', function(){
-            var node = parser.parse("'single quoted'", 'value');
-            assert.equal(node.value, "single quoted");
+            assert.equal(str.parse("'single quoted'").value, "single quoted");
         });
 
         it('should parse strings in double quotes', function(){
-            var node = parser.parse('"double quoted"', 'value');
+            var node = str.parse('"double quoted"');
             assert.equal(node.value, "double quoted");
         });
 
         it('should parse escaped strings', function(){
-            var node = parser.parse('"double \\"quoted"', 'value');
+            var node = str.parse('"double \\"quoted"');
             assert.equal(node.value, 'double \\"quoted');
         });
 
         it('should parse special characters', function(){
-            var node = parser.parse('"wäääu"', 'value');
+            var node = str.parse('"wäääu"');
             assert.equal(node.value, 'wäääu');
         });
     });
 
-    describe('names', function() {
-        it('name should fail on function names (lookahead)', function(){
-            try {
-                parser.parse('funzioniii()', 'name');
-                assert(false);
-            } catch (err){
-                assert(true);
-            }
+    describe('identifiers', function(){
+
+        var identifier = pAssert.forRule('identifier');
+
+        it('should parse a valid identifier', function(){
+            var input = 'indentificado';
+            identifier.parseTo(input, input);
         });
 
+        it('should not parse the wildcard', function(){
+            identifier.fail('*');
+        });
 
-        var node = parser.parse('testName', 'name');
-        it('should create a variable node ', function(){
-            assert.equal('testName', node.getName());
-        });
-        it('which has no parent', function(){
-            assert.equal(null, node.getParent());
-        });
-        it('and no tags', function(){
-           assert.equal(0, node.getTags().length);
+        it('should not parse invalid identifiers', function(){
+            identifier.fail('1some');
         });
     });
 
-    describe('dotted names (properties)', function(){
+    describe('access_dot', function(){
 
-        it('should handle simple names', function(){
-            var node = parser.parse('testName', 'name_dotted');
-            assert.equal('testName', node.getName());
-            assert(!node.hasParent());
+        var   access_dot = pAssert.forRule('access_dot')
+            , node;
+
+        it('should parse a single access', function(){
+            node = compareNodeName(access_dot, '.name', 'name');
+            assert.equal(null, node.getParent());
         });
 
-        it('should allow wildcards', function(){
-            var node = parser.parse('user.profile.*', 'name_dotted');
-            assert.equal('*', node.getName());
+        it('should parse nested accesses', function(){
+            node = compareNodeName(access_dot, '.venue.venueFloor.size', 'size');
+            assert(node.hasParent());
+            assert.equal(node.getParent().getName(), 'venueFloor');
+            assert.equal(node.getParent().getParent().getName(), 'venue');
+        });
+
+        it('should fail on wildcards (they are part of the access)', function(){
+            access_dot.fail('.venue.*');
+        });
+    });
+
+
+
+    describe('selector', function(){
+
+        var   selector = pAssert.forRule('selector')
+            , node;
+
+        it('should parse a valid identifier', function(){
+
+            var   input     = "identificatione"
+                , result    = selector.parse(input)
+                , node      = result[0];
+
+            assert.equal(node.getName(), input);
+        });
+
+        it('should parse the wildcard', function(){
+            var   input     = "*"
+                , result    = selector.parse(input)
+                , node      = result[0];
+
+            assert.equal(node.getName(), input);
+        });
+
+        it('should not allow accesses on the wildcard', function(){
+            selector.fail('*.someField');
+        });
+
+        it('should not parse invalid identifiers', function(){
+            selector.fail('1some');
+        });
+
+        it('name should fail on function names (lookahead)', function(){
+            selector.fail('funzioniii()');
+        });
+
+        it('should create a variable node ', function(){
+            var result = selector.parse('testName');
+            node = result[0];
+            assert.equal('testName', node.getName());
+        });
+
+        it('which has no parent', function(){
+            assert.equal(null, node.getParent());
+        });
+
+        it('and no tags', function(){
+            assert.equal(0, node.getTags().length);
+        });
+
+        it('should allow wildcards at the end', function(){
+            var result = selector.parse('user.profile.*');
+            node = result[0];
+
+            assert.equal(node.getName(), '*');
             assert(node.hasParent());
         });
 
         it('allows single wildcards', function(){
-            var node = parser.parse('*', 'name_dotted');
+            var result = selector.parse('*');
+            node = result[0];
             assert.equal('*', node.getName());
+            assert(node.isWildcard());
             assert(!node.hasParent());
         });
 
-        var node = parser.parse('user.profile.id', 'name_dotted');
         it('should handle compound names (properties)', function(){
+            var result = selector.parse('user.profile.id');
+            node = result[0];
             assert.equal('id', node.getName());
             assert(node.hasParent());
+
+            assert.equal(node.getParent().getName(), 'profile');
         });
 
         it('should create a hierarych', function(){
@@ -121,14 +194,14 @@ describe('HeaderParser', function(){
 
     describe('tagged names (ordering)', function(){
 
-        it('should handle single names with tag', function(){
+        it.skip('should handle single names with tag', function(){
             var node = parser.parse("date ASC", 'name_tagged');
             assert.equal(1, node.getTags().length);
             assert.equal('date', node.getName());
             assert.equal('ASC', node.getTags()[0]);
         });
 
-        it('should handle compound names with tag', function(){
+        it.skip('should handle compound names with tag', function(){
             var node = parser.parse("date.month DESC", 'name_tagged');
             assert.equal(1, node.getTags().length);
             assert.equal('month', node.getName());
@@ -186,7 +259,7 @@ describe('HeaderParser', function(){
         it('should handle single fields', function(){
             var node = parser.parse('id', 'select');
             assert.equal(1      , node.length);
-            assert.equal('id'   , node[0].property.getName())
+            assert.equal('id'   , node[0].property.getName());
         });
 
         it('should handle arbitrary fields', function(){

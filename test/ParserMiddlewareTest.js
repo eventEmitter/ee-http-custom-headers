@@ -105,9 +105,14 @@ describe('ParserMiddleware', function(){
 
         var   cache         = new MockCache()
             , parser        = new MockParser()
-            , middleware    = new ParserMiddleware(cache, parser);
+            , middleware    = new ParserMiddleware(cache, parser)
+            , testResponse  = {
+                send: function(status, message){
+                    log(status, message);
+                }
+            };
 
-        middleware.request(mockRequest, null, function(){
+        middleware.request(mockRequest, testResponse, function(){
 
             it('should modify the get header function', function(){
                 assert(mockRequest.getHeader !== getHeaderFunc);
