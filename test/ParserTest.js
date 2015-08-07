@@ -118,9 +118,6 @@ describe('HeaderParser', function(){
             var   input     = "*"
                 , result    = selector.parse(input);
 
-            log(result._type);
-            log(result);
-
             assert(result.isWildcard());
             assert.equal(result.getName(), input);
         });
@@ -262,55 +259,74 @@ describe('HeaderParser', function(){
     describe('projection (select)', function(){
 
         it('should handle single fields', function(){
-            var node = parser.parse('id', 'select');
-            assert.equal(1      , node.length);
-            assert.equal('id'   , node[0].property.getName());
+            var   selectStatement   = parser.parse('id', 'select')
+                , node              = selectStatement[0];
+
+            assert.equal(selectStatement.length, 1);
+            assert.equal('id'   , node.getName());
         });
 
         it('should handle arbitrary fields', function(){
-            var node = parser.parse('id, firstName, lastName, profile.id', 'select');
-            assert.equal('id'           , node[0].property.getName());
-            assert.equal('lastName'     , node[2].property.getName());
-            assert.equal('profile.id'   , node[3].property.flattenName());
+            var   selectStatement   = parser.parse('id, firstName, lastName, profile.id', 'select')
+                , lastItem          = selectStatement[3];
+
+            assert.equal(selectStatement.length, 4);
+            assert.equal('id'           , selectStatement[0].getName());
+            assert.equal('lastName'     , selectStatement[2].getName());
+            assert.equal('profile'      , lastItem.getName());
+            assert(lastItem.getProperty().hasAccesses());
+            assert(!lastItem.isAlias());
+            assert.equal(lastItem.getProperty().getAccesses().length, 1);
+            assert.equal(lastItem.getProperty().getAccesses()[0].getName(), 'id');
+
         });
 
         it('should ignore leading and trailing commas', function(){
-            var node = parser.parse(', id, firstName, lastName, profile.id ,', 'select');
-            assert.equal('id'           , node[0].property.getName());
-            assert.equal('lastName'     , node[2].property.getName());
-            assert.equal('profile.id'   , node[3].property.flattenName());
-            assert.equal(false          , node[0].isAlias());
+            var selectStatement = parser.parse(', id, firstName, lastName, profile.id ,', 'select');
+            assert.equal(selectStatement.length, 4);
         });
 
         it('should support aggregate functions (aliases)', function(){
 
-            var   node      = parser.parse('profile.rating = avg(profile.items.ratings, true)', 'select')
-                , result    = node[0];
+            var   selectStatement = parser.parse('profile.rating = avg(profile.items.ratings, true)', 'select')
+                , result    = selectStatement[0];
 
             assert.strictEqual(true , result.isAlias());
-            assert.equal('rating'   , result.property.getName());
-
-            assert(result.property.hasParent());
-            assert.equal('profile'  , result.property.getParent().getName());
+            assert.equal('profile'  , result.getName());
+            assert(result.getProperty().hasAccesses());
+            assert.equal('rating'  , result.getProperty().getAccesses()[0].getName());
         });
     });
 
     describe('ordering', function(){
         it('should handle a single tagged order', function(){
-            var node = parser.parse('created DESC', 'order');
-            assert.equal(1              , node.length);
-            assert.equal('DESC'         , node[0].getTags()[0]);
+            var   orderStatement    = parser.parse('created DESC', 'order')
+                , created           = orderStatement[0];
+
+            assert.equal(1              , orderStatement.length);
+            assert.equal(created.getName(), 'created');
+            assert.equal(created.getDirection(), 'DESC');
+
         });
 
-        it('should handle mixed orderings', function(){
-            var node = parser.parse('user.id, created RAND', 'order');
-            assert.equal(2, node.length);
-            assert.equal('user.id', node[0].flattenName());
-            assert(!node[0].hasTags());
-            assert.equal('RAND', node[1].getTags()[0]);
+        it('should handle mixed orderings and set ASC as the default direction', function(){
+
+            var   orderStatement    = parser.parse('user.id, user.created RAND', 'order')
+                , first             = orderStatement[0]
+                , second            = orderStatement[1];
+
+            assert.equal(2, orderStatement.length);
+            assert.equal('user', first.getName());
+            assert(first.getProperty().hasAccesses());
+            assert.equal('ASC', first.getDirection());
+
+            assert.equal('user', second.getName());
+            assert(second.getProperty().hasAccesses());
+            assert.equal('RAND', second.getDirection());
+
         });
 
-        it('should handle orderings by action', function(){
+        it.skip('should handle orderings by action', function(){
             var node = parser.parse('user.id, RAND(created)', 'order');
             assert.equal(2, node.length);
             assert.equal('user.id', node[0].flattenName());
