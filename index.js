@@ -34,7 +34,7 @@ module.exports.parser = parser;
  * @returns {*}
  */
 module.exports.parseSelect = function(aString){
-    return parser.parse(aString, {startRule: 'select'});
+    return parser.parse(aString,'select');
 };
 
 /**
@@ -44,7 +44,7 @@ module.exports.parseSelect = function(aString){
  * @returns {*}
  */
 module.exports.parseFilter = function(aString){
-    return parser.parse(aString, {startRule: 'filter'});
+    return parser.parse(aString, 'filter');
 };
 
 /**
@@ -54,5 +54,5 @@ module.exports.parseFilter = function(aString){
  * @returns {*}
  */
 module.exports.parseOrder = function(aString){
-    return parser.parse(aString, {startRule: 'order'});
+    return parser.parse(aString, 'order');
 };

@@ -2,15 +2,22 @@ var log         = require('ee-log'),
     Class       = require('ee-class');
 
 var PrettyPrinter = module.exports = new Class({
+
     _type: 'Pretty Printerio'
+    , buffer : null
 
-    , visitActionNode: function(node){
-        var params = node.getParameters(),
-            parameterBuffer = [];
+    , init :function(){
+        this.buffer = [];
+    }
 
-        for(var i=0; i<params.length; i++){
-            parameterBuffer.push(params.at(i).accept(this));
-        }
+    , visitActionNode : function(node) {
+
+        var params          = node.getParameters(),
+            parameterBuffer;
+
+        parameterBuffer = params.map(function(parameter){
+            return parameter.accept(this);
+        });
 
         return node.getName()+'('+parameterBuffer.join(' , ')+')';
     }
@@ -18,36 +25,44 @@ var PrettyPrinter = module.exports = new Class({
     , visitNamedNode: function(node){
         return node.getName();
     }
-    , visitPropertyNode: function(node){
-        var names = node.getNames().join('.');
-        if(!node.hasTags()){
-            return names;
-        }
-        return names+' '+node.getTags().join(' ');
-    }
+    /**
+     * A variable node can now represent multiple accesses.
+     * @param node
+     */
     , visitVariableNode: function(node){
-        return this.visitPropertyNode(node);
+        var   names = [];
+        this.buffer.push(node.getName());
+        if(node.hasAccesses()){
+            this.buffer.push('[');
+            node.getAccesses().forEach(function(access){
+                access.accept(this);
+                this.buffer.push(' , ');
+            }, this);
+            this.buffer.pop();
+            this.buffer.push(']');
+        }
     }
 
     , visitComparisonNode: function(node){
-        return node.getValue().accept(this)+"\t"+node.getOperator()+"\t"+node.getProperty().accept(this);
+        return node.getValue().accept(this)+"\t"+node.getOperator()+"\t"+node.getVariable().accept(this);
     }
 
     , visitValueNode: function(node){
         return node.toString();
     }
-    , visitNodeCollection: function(node){
-        var result = [];
-        for(var i=0; i<node.length; i++){
-            result.push(node.at(i).accept(this));
-        }
-        return result;
+    , visitNodeCollection : function(collection) {
+        return collection.map(function(node){
+            return node.accept(this);
+        }, this);
     }
 
     , visitOrderStatement: function(node){
         return '\nORDER-BY:\n\t'+this.visitNodeCollection(node).join('\n\t')
     }
 
+    , visitOrderItem: function(node){
+        return node.getProperty().accept(this) + ' ' + node.getDirection();
+    }
     , visitFilterStatement: function(node){
         return '\nFILTER: \n\t'+this.visitNodeCollection(node).join('\n\tAND\t');
     }
@@ -55,7 +70,10 @@ var PrettyPrinter = module.exports = new Class({
     , visitSelectStatement: function(node){
         return '\nSELECT:\n\t'+this.visitNodeCollection(node).join(',\n\t');
     }
+
     , prettyPrint: function(node){
-        return node.accept(this);
+        this.buffer = [];
+        node.accept(this);
+        return this.buffer.join('');
     }
 });

@@ -35,47 +35,7 @@ describe('HeaderParser', function(){
 
     });
 
-    describe('string', function(){
 
-        var str = pAssert.forRule('value');
-
-        it('should parse strings in single quotes', function(){
-            assert.equal(str.parse("'single quoted'").value, "single quoted");
-        });
-
-        it('should parse strings in double quotes', function(){
-            var node = str.parse('"double quoted"');
-            assert.equal(node.value, "double quoted");
-        });
-
-        it('should parse escaped strings', function(){
-            var node = str.parse('"double \\"quoted"');
-            assert.equal(node.value, 'double \\"quoted');
-        });
-
-        it('should parse special characters', function(){
-            var node = str.parse('"wäääu"');
-            assert.equal(node.value, 'wäääu');
-        });
-    });
-
-    describe('identifiers', function(){
-
-        var identifier = pAssert.forRule('identifier');
-
-        it('should parse a valid identifier', function(){
-            var input = 'indentificado';
-            identifier.parseTo(input, input);
-        });
-
-        it('should not parse the wildcard', function(){
-            identifier.fail('*');
-        });
-
-        it('should not parse invalid identifiers', function(){
-            identifier.fail('1some');
-        });
-    });
 
     describe('access_dot', function(){
 
@@ -274,10 +234,10 @@ describe('HeaderParser', function(){
             assert.equal('id'           , selectStatement[0].getName());
             assert.equal('lastName'     , selectStatement[2].getName());
             assert.equal('profile'      , lastItem.getName());
-            assert(lastItem.getProperty().hasAccesses());
+            assert(lastItem.hasAccesses());
             assert(!lastItem.isAlias());
-            assert.equal(lastItem.getProperty().getAccesses().length, 1);
-            assert.equal(lastItem.getProperty().getAccesses()[0].getName(), 'id');
+            assert.equal(lastItem.getAccesses().length, 1);
+            assert.equal(lastItem.getAccesses()[0].getName(), 'id');
 
         });
 
@@ -291,10 +251,10 @@ describe('HeaderParser', function(){
             var   selectStatement = parser.parse('profile.rating = avg(profile.items.ratings, true)', 'select')
                 , result    = selectStatement[0];
 
-            assert.strictEqual(true , result.isAlias());
+            assert.strictEqual(true , result.getAccesses()[0].isAlias());
             assert.equal('profile'  , result.getName());
-            assert(result.getProperty().hasAccesses());
-            assert.equal('rating'  , result.getProperty().getAccesses()[0].getName());
+            assert(result.hasAccesses());
+            assert.equal('rating'  , result.getAccesses()[0].getName());
         });
     });
 
@@ -340,37 +300,6 @@ describe('HeaderParser', function(){
             assert.equal('priority', node[0].getName());
         });
 
-    });
-
-    describe('date', function() {
-
-        it('should handle dates without time', function(){
-            var value_node = parser.parse('2013-12-24', 'date');
-            var node = value_node.getValue();
-
-            assert(node instanceof Date);
-            assert.equal(2013, node.getFullYear());
-            assert.equal(11, node.getMonth());
-            assert.equal(24, node.getDate());
-            assert.equal(0, node.getHours());
-            assert.equal(0, node.getMinutes());
-            assert.equal(0, node.getSeconds());
-            assert.equal(0, node.getMilliseconds());
-        });
-
-        it('should handle dates with time', function(){
-            var value_node = parser.parse('2000-01-04 10:15:03', 'date');
-            var node = value_node.getValue();
-
-            assert(node instanceof Date);
-            assert.equal(2000, node.getFullYear());
-            assert.equal(0, node.getMonth());
-            assert.equal(4, node.getDate());
-            assert.equal(10, node.getHours());
-            assert.equal(15, node.getMinutes());
-            assert.equal(3, node.getSeconds());
-            assert.equal(0, node.getMilliseconds());
-        });
     });
 
     describe('comparison', function(){
@@ -453,21 +382,21 @@ describe('HeaderParser', function(){
             var node = parser.parse('name LIKE "some%one"', 'filter');
             assert.equal(1, node.length);
             assert.equal(node[0].operator, 'LIKE');
-            assert.equal(node[0].property.name, 'name');
-            assert.equal(node[0].value.value, 'some%one');
+            assert.equal(node[0].getVariable().name, 'name');
+            assert.equal(node[0].getValue().value, 'some%one');
         });
 
         it('the like operator should be case insensitive and return the operator in upper case', function(){
             var node = parser.parse('name liKe "some%one", id = 100', 'filter');
             assert.equal(2, node.length);
             assert.equal(node[0].operator, 'LIKE');
-            assert.equal(node[0].property.name, 'name');
-            assert.equal(node[0].value.value, 'some%one');
+            assert.equal(node[0].getVariable().name, 'name');
+            assert.equal(node[0].getValue().value, 'some%one');
         });
 
         it('should allow whitespace around operators', function(){
             var node = parser.parse('eventData.hidden =true', 'filter');
-            assert.strictEqual(true, node[0].value.value);
+            assert.strictEqual(true, node[0].getValue().value);
         });
 
     });

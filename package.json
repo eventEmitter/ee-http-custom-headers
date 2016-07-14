@@ -19,7 +19,7 @@
           "ee-class"                : "1.0.*"
         , "ee-types"                : "0.1.*"
         , "ee-log"                  : "0.3.*"
-        , "pegjs"                   : "0.8.*"
+        , "pegjs"                   : "0.9.*"
         , "ee-lru-cache"            : "0.1.*"
     }
     , "devDependencies": {
