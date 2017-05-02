@@ -16,14 +16,14 @@
         "url"                       : "https://github.com/eventEmitter/ee-rest-headers/issues"
     }
     , "dependencies": {
-          "ee-class"                : "1.0.*"
-        , "ee-types"                : "0.1.*"
-        , "ee-log"                  : "0.3.*"
-        , "pegjs"                   : "0.8.*"
-        , "ee-lru-cache"            : "0.1.*"
+          "ee-class"                : "~1.4.0"
+        , "ee-types"                : "~2.1.2"
+        , "ee-log"                  : "~2.0.2"
+        , "pegjs"                   : "~0.10.0"
+        , "ee-lru-cache"            : "~1.0.0"
     }
     , "devDependencies": {
-        "mocha"                     : "1.18.*"        
+        "mocha"                     : "~3.3.0"        
     }
     , "optionalDependencies": {}
     , "keywords"                    : ["node" , "rest" , "headers" , "dsl"]

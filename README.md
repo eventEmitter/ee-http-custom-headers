@@ -1,5 +1,7 @@
 #ee-rest-headers
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/eventEmitter/ee-rest-headers.svg)](https://greenkeeper.io/)
+
 The ee-rest-headers package mainly consists of a parser which parses complex http headers based on the rest header
 DSL specified in  [the Joinbox RESTFul Styleguide](https://github.com/joinbox/guidelines/blob/master/styleguide/RESTful.md).
 
